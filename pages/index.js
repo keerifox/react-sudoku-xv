@@ -1,3 +1,5 @@
+import fetch from 'isomorphic-unfetch'
+
 class Cell extends React.Component {
 	render() {
 		return (
@@ -45,14 +47,21 @@ class Cell extends React.Component {
 }
 
 class Board extends React.Component {
-	renderCell(cellId) {
+	renderCell(cellId, puzzleCells) {
+		const valueDefault =
+				( puzzleCells[cellId] !== '.' )
+			? puzzleCells[cellId]
+			: null
+
 		return <Cell
 			key={cellId}
-			valueDefault={cellId}
+			valueDefault={valueDefault}
 		/>
 	}
 
 	render() {
+		const puzzleCells = this.props.puzzleCells
+
 		let rows = []
 
 		for(let rowIdx = 0; rowIdx < 9; rowIdx++) {
@@ -60,7 +69,10 @@ class Board extends React.Component {
 
 			for(let columnIdx = 0; columnIdx < 9; columnIdx++) {
 				columns.push(
-					this.renderCell(rowIdx * 9 + columnIdx)
+					this.renderCell(
+						rowIdx * 9 + columnIdx,
+						puzzleCells
+					)
 				)
 			}
 
@@ -108,7 +120,10 @@ class Game extends React.Component {
 	render() {
 		return (
 			<div id="game">
-				<Board />
+				<Board
+					puzzleId={this.props.puzzleId}
+					puzzleCells={this.props.puzzleCells}
+				/>
 				<style jsx>{`
 					@font-face {
 						font-family: 'ChivoMedium';
@@ -136,11 +151,20 @@ class Game extends React.Component {
 	}
 }
 
-class Index extends React.Component {
-	render() {
-		return (
-			<Game />
-		)
+const Index = (props) => (
+	<Game
+		puzzleId={props.puzzleId}
+		puzzleCells={props.puzzleCells}
+	/>
+)
+
+Index.getInitialProps = async () => {
+	const res = await fetch('http://localhost:3001/puzzles/new', { method: 'POST' })
+	const data = await res.json()
+
+	return {
+		puzzleId: data.id,
+		puzzleCells: data.cells,
 	}
 }
 
