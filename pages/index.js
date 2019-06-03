@@ -143,7 +143,9 @@ class Game extends React.Component {
 						display: flex;
 						flex-direction: column;
 						align-items: center;
+						justify-content: center;
 						min-width: 560px;
+						height: 95vh;
 					}
 				`}</style>
 			</div>
