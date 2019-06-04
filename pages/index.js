@@ -24,7 +24,14 @@ class Connection extends React.Component {
 						font-size: 24px;
 						text-align: center;
 						top: 0;
-						z-index: 2;
+						z-index: 3;
+						-webkit-touch-callout: none;
+						-webkit-user-select: none;
+						-khtml-user-select: none;
+						-moz-user-select: -moz-none;
+						-ms-user-select: none;
+						user-select: none;
+						pointer-events: none;
 					}
 
 					.connection > .value {
@@ -46,11 +53,11 @@ class Connection extends React.Component {
 					}
 
 					.connection.x {
-						color: #228;
+						color: #229;
 					}
 
 					.connection.v {
-						color: #822;
+						color: #922;
 					}
 				`}</style>
 			</div>
@@ -80,10 +87,21 @@ class Cell extends React.Component {
 			)
 		)
 
+		const isActiveCell = (this.props.activeCellId === this.props.id)
+
 		return (
-			<div className="cell">
-				<div className="value">
-					{this.props.valueDefault}
+			<div
+				className={`cell ${isActiveCell ? 'active' : 'inactive'}`}
+				onClick={this.props.onClick}
+			>
+				<div
+					className="value user"
+				>
+					{
+							(this.props.valueUser !== '.')
+						? this.props.valueUser
+						: ''
+					}
 				</div>
 				<Connection
 					direction="right"
@@ -93,6 +111,18 @@ class Cell extends React.Component {
 					direction="bottom"
 					value={connectionBottom}
 				/>
+				<div
+					className="value default"
+					onKeyDown={this.props.onKeyDown}
+					onFocus={this.props.onFocus}
+					tabIndex="0"
+				>
+					{
+							(this.props.valueDefault !== '.')
+						? this.props.valueDefault
+						: ''
+					}
+				</div>
 				<style jsx>{`
 					.cell {
 						flex: 1;
@@ -100,12 +130,24 @@ class Cell extends React.Component {
 						position: relative;
 					}
 
+					.cell.active:after {
+						content: "";
+						display: block;
+						position: relative;
+						width: 100%;
+						height: 100%;
+						top: -100%;
+						border: 3px solid #E55;
+						margin: -3px;
+						z-index: 2;
+					}
+
 					.cell > .value {
 						position: absolute;
 						width: 100%;
 						height: 100%;
-						top: 18%;
-						font-family: 'ChivoBold';
+						top: 0;
+						padding-top: 18%;
 						font-size: 40px;
 						text-align: center;
 						line-height: 1;
@@ -115,6 +157,21 @@ class Cell extends React.Component {
 						-moz-user-select: -moz-none;
 						-ms-user-select: none;
 						user-select: none;
+					}
+
+					.cell > .value.default {
+						font-family: 'ChivoBold';
+						color: #111;
+					}
+
+					.cell > .value.user {
+						font-family: 'ChivoMedium';
+						color: #229;
+					}
+
+					.cell > .value:focus {
+						outline: none;
+						box-shadow: none;
 					}
 
 					.cell:nth-child(3), .cell:nth-child(6) {
@@ -133,18 +190,98 @@ class Cell extends React.Component {
 }
 
 class Board extends React.Component {
-	renderCell(cellId, puzzleCells, puzzleConnections) {
-		const valueDefault =
-				( puzzleCells[cellId] !== '.' )
-			? puzzleCells[cellId]
-			: null
+	constructor(props) {
+		super(props)
 
+		let initialPuzzleInput = ''
+
+		for(let cellIdx = 0; cellIdx < 81; cellIdx++) {
+			initialPuzzleInput += '.'
+		}
+
+		this.state = {
+			activeCellId: -1,
+			puzzleInput: initialPuzzleInput,
+		}
+	}
+
+	setActiveCellId(cellId) {
+		this.setState({
+			activeCellId: cellId,
+		})
+	}
+
+	onKeyDown(event) {
+		const activeCellId = this.state.activeCellId
+
+		if(event.key === 'Escape') {
+			this.setActiveCellId(-1)
+		} else if(event.key === 'ArrowLeft') {
+			if(activeCellId % 9 === 0) {
+				return
+			}
+
+			this.setActiveCellId(activeCellId - 1)
+		} else if(event.key === 'ArrowRight') {
+			if(activeCellId % 9 === 8) {
+				return
+			}
+
+			this.setActiveCellId(activeCellId + 1)
+		} else if(event.key === 'ArrowUp') {
+			if(activeCellId < 9) {
+				return
+			}
+
+			this.setActiveCellId(activeCellId - 9)
+		} else if(event.key === 'ArrowDown') {
+			if(activeCellId > 71) {
+				return
+			}
+
+			this.setActiveCellId(activeCellId + 9)
+		}
+
+		if( this.props.puzzleCells[activeCellId] !== '.' ) {
+			return
+		}
+
+		let inputValue = event.key.toString()
+
+		if(/[1-9]/.test(event.key) === false) {
+			if(
+						(event.key !== 'Backspace')
+					&& (event.key !== 'Delete')
+				) {
+					return
+			}
+
+			inputValue = '.'
+		}
+
+		let newPuzzleInput =
+				this.state.puzzleInput.slice(0, activeCellId)
+			+ inputValue
+			+ this.state.puzzleInput.slice(activeCellId + 1)
+
+		this.setState({
+			puzzleInput: newPuzzleInput,
+		})
+	}
+
+	renderCell(cellId, puzzleCells, puzzleConnections) {
 		const connection = parseInt( puzzleConnections[cellId], 16 )
 
 		return <Cell
 			key={cellId}
-			valueDefault={valueDefault}
+			id={cellId}
+			valueDefault={puzzleCells[cellId]}
+			valueUser={this.state.puzzleInput[cellId]}
 			connection={connection}
+			activeCellId={this.state.activeCellId}
+			onClick={() => this.setActiveCellId(cellId)}
+			onFocus={() => this.setActiveCellId(cellId)}
+			onKeyDown={this.onKeyDown.bind(this)}
 		/>
 	}
 
