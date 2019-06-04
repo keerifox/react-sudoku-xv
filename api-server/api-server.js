@@ -34,6 +34,10 @@ Puzzle.init({
 		type: Sequelize.STRING,
 		allowNull: false,
 	},
+	cellsConnections: {
+		type: Sequelize.STRING,
+		allowNull: false,
+	},
 	cellsSolution: {
 		type: Sequelize.STRING,
 		allowNull: false,
@@ -50,21 +54,56 @@ Puzzle.init({
 	sequelize,
 })
 
+const getCellsConnections = (cellsSolution) => {
+	let cellsConnections = ''
+
+	for(let rowIdx = 0; rowIdx < 8; rowIdx++) {
+		for(let columnIdx = 0; columnIdx < 8; columnIdx++) {
+			const cellIdx = rowIdx * 9 + columnIdx
+
+			const sumWithRight =
+					parseInt( cellsSolution[cellIdx] )
+				+ parseInt( cellsSolution[cellIdx + 1] )
+
+			const sumWithBottom =
+					parseInt( cellsSolution[cellIdx] )
+				+ parseInt( cellsSolution[cellIdx + 9] )
+
+			const connection = (
+					( (sumWithBottom === 10) << 3 )
+				| ( (sumWithBottom === 5) << 2 )
+				| ( (sumWithRight === 10) << 1 )
+				| (sumWithRight === 5)
+			)
+
+			cellsConnections += connection.toString(16)
+		}
+
+		cellsConnections += '0'
+	}
+
+	return cellsConnections
+}
+
 sequelize.sync().then(() => {
 	app.post('/puzzles/new', async (req, res) => {
 		const cellsDisclosedCount = 40
 		const cellsDisclosed = sudoku.generate(cellsDisclosedCount)
 		const cellsSolution = sudoku.solve(cellsDisclosed)
 
+		const cellsConnections = getCellsConnections(cellsSolution)
+
 		const puzzle = await Puzzle.create({
 			cellsDisclosedCount,
 			cellsDisclosed,
+			cellsConnections,
 			cellsSolution,
 		})
 
 		res.json({
 			id: puzzle.id,
-			cells: puzzle.cellsDisclosed,
+			cells: cellsDisclosed,
+			connections: cellsConnections,
 		})
 	})
 
