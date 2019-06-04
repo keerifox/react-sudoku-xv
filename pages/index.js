@@ -107,8 +107,8 @@ class Cell extends React.Component {
 						top: 18%;
 						font-family: 'ChivoBold';
 						font-size: 40px;
-						font-weight: bold;
 						text-align: center;
+						line-height: 1;
 						-webkit-touch-callout: none;
 						-webkit-user-select: none;
 						-khtml-user-select: none;
