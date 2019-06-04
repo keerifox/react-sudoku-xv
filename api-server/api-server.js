@@ -87,7 +87,7 @@ const getCellsConnections = (cellsSolution) => {
 
 sequelize.sync().then(() => {
 	app.post('/puzzles/new', async (req, res) => {
-		const cellsDisclosedCount = 40
+		const cellsDisclosedCount = 20
 		const cellsDisclosed = sudoku.generate(cellsDisclosedCount)
 		const cellsSolution = sudoku.solve(cellsDisclosed)
 
