@@ -56,18 +56,29 @@ Puzzle.init({
 
 const getCellsConnections = (cellsSolution) => {
 	let cellsConnections = ''
+	let cellIdx = 0
 
-	for(let rowIdx = 0; rowIdx < 8; rowIdx++) {
-		for(let columnIdx = 0; columnIdx < 8; columnIdx++) {
-			const cellIdx = rowIdx * 9 + columnIdx
+	for(let rowIdx = 0; rowIdx < 9; rowIdx++) {
+		const isLastRow = (rowIdx === 8)
+
+		for(let columnIdx = 0; columnIdx < 9; columnIdx++) {
+			const isLastColumn = (columnIdx === 8)
 
 			const sumWithRight =
-					parseInt( cellsSolution[cellIdx] )
-				+ parseInt( cellsSolution[cellIdx + 1] )
+					(isLastColumn === false)
+				? (
+						parseInt( cellsSolution[cellIdx] )
+					+ parseInt( cellsSolution[cellIdx + 1] )
+				)
+				: 0
 
 			const sumWithBottom =
-					parseInt( cellsSolution[cellIdx] )
-				+ parseInt( cellsSolution[cellIdx + 9] )
+					(isLastRow === false)
+				? (
+						parseInt( cellsSolution[cellIdx] )
+					+ parseInt( cellsSolution[cellIdx + 9] )
+				)
+				: 0
 
 			const connection = (
 					( (sumWithBottom === 10) << 3 )
@@ -77,9 +88,9 @@ const getCellsConnections = (cellsSolution) => {
 			)
 
 			cellsConnections += connection.toString(16)
-		}
 
-		cellsConnections += '0'
+			cellIdx++
+		}
 	}
 
 	return cellsConnections
