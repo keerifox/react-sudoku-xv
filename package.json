@@ -1,7 +1,7 @@
 {
   "name": "react-sudoku-xv",
   "version": "1.0.0",
-  "description": "",
+  "description": "Sudoku XV board in React.js",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -14,7 +14,7 @@
     "url": "git+https://github.com/keerifox/react-sudoku-xv.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "keerifox",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/keerifox/react-sudoku-xv/issues"
